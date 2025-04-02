@@ -1,0 +1,86 @@
+<!-- This template is used by Turbo-Flask to update the loading status without refreshing the page -->
+<div id="loading-status">
+    <div class="text-center mb-4">
+        {% if status == 'completed' %}
+            <h4 class="text-success">Analysis complete! Redirecting to results...</h4>
+            <div class="progress mb-3" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            
+            {% if task.get('redirect_url') %}
+                <script>
+                    // Redirect to results page after a short delay
+                    setTimeout(function() {
+                        window.location.href = "{{ task.get('redirect_url') }}";
+                    }, 1500);
+                </script>
+            {% endif %}
+            
+        {% elif status == 'failed' %}
+            <h4 class="text-danger">Analysis failed: {{ task.get('error', 'Unknown error') }}</h4>
+            <div class="progress mb-3" style="height: 10px;">
+                <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">Return to Home</a>
+        {% else %}
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4>{{ task.get('phase_description', 'Analysis in progress...') }}</h4>
+            
+            {% if task.get('total_elements') and task.get('processed_elements') is defined %}
+                {% set total = task.get('total_elements', 0) %}
+                {% set processed = task.get('processed_elements', 0) %}
+                
+                {% if task.get('detailed_processing_elements', 0) > 0 %}
+                    {% set processed = task.get('detailed_processing_elements', 0) %}
+                {% endif %}
+                
+                {% if total > 0 %}
+                    {% set percent = (processed / total) * 100 %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span>Processing elements: {{ processed }} of {{ total }}</span>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                            role="progressbar" 
+                            data-percent="{{ percent }}"
+                            aria-valuenow="{{ percent|int }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100"></div>
+                    </div>
+                    
+                    <script>
+                        // Set the width of progress bars based on data-percent attribute
+                        document.querySelectorAll('.progress-bar[data-percent]').forEach(function(bar) {
+                            bar.style.width = bar.getAttribute('data-percent') + '%';
+                        });
+                    </script>
+                    
+                    <!-- Time estimation from backend calculations -->
+                    {% if task.get('processing_rate_formatted') and task.get('estimated_time_remaining') %}
+                        <div class="text-center mb-3">
+                            <p class="text-muted">
+                                Processing rate: {{ task.get('processing_rate_formatted') }}<br>
+                                Estimated time remaining: {{ task.get('estimated_time_remaining') }}
+                            </p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+            
+            {% if task.get('phase') %}
+                <div class="alert alert-light">
+                    <h5 class="mb-2">Current phase:</h5>
+                    <p class="mb-2">{{ task.get('phase_description', 'Initializing...') }}</p>
+                    
+                    {% if task.get('elapsed_time_formatted') %}
+                        <p class="text-muted">Elapsed time: {{ task.get('elapsed_time_formatted') }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div> 

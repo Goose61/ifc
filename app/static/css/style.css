@@ -1,0 +1,52 @@
+/* Custom styles for IFC Analyzer web application */
+
+/* Add some padding to the body */
+body {
+    padding-bottom: 2rem;
+    background-color: #f8f9fa;
+}
+
+/* Style card shadows */
+.card.shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Style for file input */
+.form-control[type="file"] {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+/* Style for table headers */
+.table-dark th {
+    background-color: #343a40 !important;
+}
+
+/* Add animation for loading state */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+#resultTable td.text-center:only-child {
+    animation: pulse 1.5s infinite;
+    padding: 2rem;
+}
+
+/* Style for file cards */
+.card-header h5 {
+    margin-bottom: 0;
+}
+
+.card-body .btn {
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 768px) {
+    .col-md-4 {
+        margin-bottom: 1rem;
+    }
+} 

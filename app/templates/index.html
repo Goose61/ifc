@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}IFC Analyzer - Upload{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">IFC File Analysis</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead mb-4">
+                    Upload an IFC2X3 file to generate a detailed material takeoff analysis.
+                </p>
+                
+                <form id="uploadForm" action="{{ url_for('main.upload_file') }}" method="post" enctype="multipart/form-data" class="mb-4">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Select IFC File</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".ifc" required>
+                        <div class="form-text">Supported format: IFC2X3 (.ifc files)</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">Upload and Analyze</button>
+                    </div>
+                </form>
+                
+                <!-- Analysis progress section (initially hidden) -->
+                <div id="analysisProgress" class="d-none">
+                    <div class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                            <span id="progressText">0%</span>
+                        </div>
+                    </div>
+                    <p id="statusText" class="text-center mb-3">Preparing to upload file...</p>
+                    <div class="alert alert-warning text-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Please wait!</strong> Do not close this page or refresh your browser.
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h5>What this tool does:</h5>
+                    <ul>
+                        <li>Analyzes all elements in your IFC model</li>
+                        <li>Extracts material information and properties</li>
+                        <li>Calculates dimensions, volumes, and areas</li>
+                        <li>Generates comprehensive material takeoff reports</li>
+                        <li>Provides downloadable Excel, CSV, and JSON results</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-secondary mt-3">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <h5>Need to convert CAD files to IFC?</h5>
+                            <p class="mb-0">If you have AutoCAD (DWG) or other CAD files that need to be converted to IFC format first, you can use this free online converter:</p>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="https://products.aspose.app/cad/conversion/dwg-to-ifc" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-right-square"></i> Convert CAD to IFC
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Supported Features</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Element Types</h5>
+                        <ul>
+                            <li>Walls</li>
+                            <li>Slabs</li>
+                            <li>Columns</li>
+                            <li>Beams</li>
+                            <li>Footings</li>
+                            <li>Windows</li>
+                            <li>Doors</li>
+                            <li>And more...</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Material Properties</h5>
+                        <ul>
+                            <li>Material types</li>
+                            <li>Grades</li>
+                            <li>Specifications</li>
+                            <li>Dimensions</li>
+                            <li>Quantities</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side file validation
+    document.getElementById('file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const fileName = file.name.toLowerCase();
+            if (!fileName.endsWith('.ifc')) {
+                alert('Please select an IFC file (.ifc extension)');
+                e.target.value = '';
+            }
+        }
+    });
+    
+    // Form submission with progress tracking
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const fileInput = document.getElementById('file');
+        if (!fileInput.files.length) {
+            alert('Please select a file to upload');
+            return;
+        }
+        
+        // Show progress UI and hide form
+        const form = document.getElementById('uploadForm');
+        const progressSection = document.getElementById('analysisProgress');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        progressSection.classList.remove('d-none');
+        
+        // Create FormData object
+        const formData = new FormData(form);
+        
+        // Update status
+        document.getElementById('statusText').textContent = 'Uploading file...';
+        document.getElementById('progressBar').style.width = '10%';
+        document.getElementById('progressText').textContent = '10%';
+        
+        // Send AJAX request to upload file
+        fetch('{{ url_for("main.upload_file") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            // After upload is complete, redirect to loading page
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                // Form will handle the redirect automatically
+                form.submit();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during file upload. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Upload and Analyze';
+            progressSection.classList.add('d-none');
+        });
+    });
+</script>
+{% endblock %} 

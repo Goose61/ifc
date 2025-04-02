@@ -1,0 +1,8 @@
+ifcopenshell>=0.7.0
+numpy>=1.22.0
+pandas>=1.4.0
+openpyxl==3.1.2
+flask>=2.2.0
+werkzeug>=2.2.0
+flask-cors>=3.0.10
+pytest>=7.0.0 

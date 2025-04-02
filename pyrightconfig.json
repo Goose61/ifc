@@ -1,0 +1,10 @@
+{
+    "reportMissingImports": false,
+    "reportMissingModuleSource": false,
+    "extraPaths": [
+        "."
+    ],
+    "venvPath": ".",
+    "pythonPath": "python",
+    "typeCheckingMode": "basic"
+} 

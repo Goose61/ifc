@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}IFC Analyzer - Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Analysis Results</h2>
+                <a href="{{ url_for('main.index') }}" class="btn btn-light">New Analysis</a>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <h4 class="alert-heading">Analysis Complete!</h4>
+                    <p>Your IFC file has been successfully analyzed. You can download the results in different formats below.</p>
+                    {% if has_warning %}
+                    <div class="alert alert-warning mt-2">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        {{ has_warning }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="quantityAdjustment" class="form-label">Quantity Adjustment (%)</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="quantityAdjustment" value="100" min="0" step="0.1">
+                        <span class="input-group-text">%</span>
+                    </div>
+                    <div class="form-text">Adjust all quantities by this percentage (e.g., 110 for 10% more). This will apply to all exported files.</div>
+                </div>
+                
+                <div class="row">
+                    {% if excel_file %}
+                    <div class="col-md-3">
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Excel Report</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Complete material takeoff in Excel format with formatted tables and multiple sheets.</p>
+                                <div class="d-grid">
+                                    <button onclick="exportWithAdjustment('excel')" class="btn btn-primary">
+                                        <i class="bi bi-file-earmark-excel"></i> Export Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if summary_file %}
+                    <div class="col-md-3">
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">CSV Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Summary of material takeoff in CSV format for easy importing into other tools.</p>
+                                <div class="d-grid">
+                                    <button onclick="exportWithAdjustment('csv')" class="btn btn-info text-white">
+                                        <i class="bi bi-file-earmark-text"></i> Export CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-3">
+                        <div class="card border-warning mb-3">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">JSON Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Complete analysis data in JSON format for developers or advanced usage.</p>
+                                <div class="d-grid">
+                                    <button onclick="exportWithAdjustment('json')" class="btn btn-warning">
+                                        <i class="bi bi-file-earmark-code"></i> Export JSON
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card border-secondary mb-3">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">Download All</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Download all available report formats in a single operation.</p>
+                                <div class="d-grid">
+                                    <button onclick="exportWithAdjustment('all')" class="btn btn-secondary">
+                                        <i class="bi bi-download"></i> Download All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Your analysis results will be available for download for a limited time. Make sure to save the files you need to your local device.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Material Takeoff Summary</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Material Name</th>
+                                <th>Count</th>
+                                <th>Volume (m³)</th>
+                                <th>Weight (kg)</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialSummaryTable">
+                            <tr>
+                                <td colspan="5" class="text-center">Loading results...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Element Type Summary</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Element Type</th>
+                                <th>Count</th>
+                                <th>Volume (m³)</th>
+                                <th>Area (m²)</th>
+                                <th>Materials</th>
+                            </tr>
+                        </thead>
+                        <tbody id="elementTypeTable">
+                            <tr>
+                                <td colspan="5" class="text-center">Loading results...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add Bootstrap icons
+    const iconLink = document.createElement('link');
+    iconLink.rel = 'stylesheet';
+    iconLink.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css';
+    document.head.appendChild(iconLink);
+    
+    // Make the JSON data available to JavaScript
+    const jsonData = JSON.parse('{{ json_data|tojson|safe }}');
+    
+    // Function to display JSON data in tables
+    function displayJSONData() {
+        try {
+            // Update Material Summary Table
+            const materialSummaryTable = document.getElementById('materialSummaryTable');
+            let materialHtml = '';
+            
+            // Sort materials by volume
+            const sortedMaterials = Object.entries(jsonData.materials)
+                .sort((a, b) => b[1].total_volume - a[1].total_volume);
+            
+            for (const [materialName, data] of sortedMaterials) {
+                if (data.count > 0) {
+                    // Calculate weight using density (default to steel if not specified)
+                    let density = 7850; // Default density (steel)
+                    for (const [propName, propValue] of Object.entries(data.properties)) {
+                        if (propName.toLowerCase().includes('density') && propValue) {
+                            try {
+                                density = parseFloat(propValue);
+                                break;
+                            } catch (e) {
+                                // Ignore parsing errors
+                            }
+                        }
+                    }
+                    const weight = data.total_volume * density;
+                    
+                    materialHtml += `<tr>
+                        <td>${materialName}</td>
+                        <td>${data.count}</td>
+                        <td>${data.total_volume.toFixed(3)}</td>
+                        <td>${weight.toFixed(1)}</td>
+                        <td>${data.category || 'N/A'}</td>
+                    </tr>`;
+                }
+            }
+            
+            materialSummaryTable.innerHTML = materialHtml || '<tr><td colspan="5" class="text-center">No material data available</td></tr>';
+            
+            // Update Element Type Table
+            const elementTypeTable = document.getElementById('elementTypeTable');
+            let elementHtml = '';
+            
+            // Sort element types by volume
+            const sortedElementTypes = Object.entries(jsonData.element_types)
+                .sort((a, b) => b[1].total_volume - a[1].total_volume);
+            
+            for (const [elementType, data] of sortedElementTypes) {
+                if (data.count > 0) {
+                    elementHtml += `<tr>
+                        <td>${elementType}</td>
+                        <td>${data.count}</td>
+                        <td>${data.total_volume.toFixed(3)}</td>
+                        <td>${data.total_area.toFixed(3)}</td>
+                        <td>${Object.keys(data.materials).join(', ') || 'N/A'}</td>
+                    </tr>`;
+                }
+            }
+            
+            elementTypeTable.innerHTML = elementHtml || '<tr><td colspan="5" class="text-center">No element data available</td></tr>';
+            
+        } catch (error) {
+            console.error('Error displaying JSON data:', error);
+            document.getElementById('materialSummaryTable').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading material data.</td></tr>';
+            document.getElementById('elementTypeTable').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading element data.</td></tr>';
+        }
+    }
+    
+    // Function to export data with adjustment
+    async function exportWithAdjustment(format) {
+        const adjustment = document.getElementById('quantityAdjustment').value;
+        const button = event.currentTarget; // Use currentTarget instead of target
+        const originalText = button.innerHTML;
+        
+        try {
+            // Disable button and show loading state
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+            
+            // Call the API to generate the file with adjusted quantities
+            const response = await fetch(`/api/export/{{ filename }}?format=${format}&adjustment=${adjustment}`);
+            if (!response.ok) {
+                throw new Error(`Failed to generate ${format} file`);
+            }
+            
+            const data = await response.json();
+            
+            if (format === 'all') {
+                // Create download links for all files
+                for (const file of data.files) {
+                    const link = document.createElement('a');
+                    link.href = file.url;
+                    link.download = file.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    // Add a small delay between downloads
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            } else {
+                // Create a download link for the single file
+                const link = document.createElement('a');
+                link.href = data.download_url;
+                link.download = data.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+        } catch (error) {
+            console.error(`Error generating ${format}:`, error);
+            alert(`Error generating ${format} file. Please try again.`);
+        } finally {
+            // Restore button state
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+    
+    // Load the data when the page loads
+    window.addEventListener('DOMContentLoaded', displayJSONData);
+</script>
+{% endblock %} 

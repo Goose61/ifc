@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Access Forbidden{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h2 class="mb-0">403 - Access Forbidden</h2>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    <i class="bi bi-lock" style="font-size: 5rem; color: #dc3545;"></i>
+                </div>
+                <h3 class="mb-3">You don't have permission to access this resource</h3>
+                <p class="lead mb-4">
+                    The server understood your request, but you don't have the necessary
+                    permissions to access this resource.
+                </p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-house-door"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
